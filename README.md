@@ -4,10 +4,10 @@
 
 ## 如何使用
 
-1. 同步该库
+### 1. 同步该库
   > git clone https://github.com/JuerGenie/vransland
 
-2. 依据 REST API 的结构，创建文件夹
+### 2. 依据 REST API 的结构，创建文件夹
   ```
   示例：
   
@@ -20,7 +20,7 @@
   ```
   > 注：{users}.lua 形式的API的支持尚未实现，但已在未来的更新计划中。
   
-  3. 在相应位置填入对应脚本
+### 3. 在相应位置填入对应脚本
   > 如同 step.2 中所示那样，脚本内容如下：
   ```lua
   -- users.lua
@@ -34,10 +34,10 @@
   end
   ```
   
-4. 启动库
+### 4. 启动库
   > 若使用 jar 包形式，请使用：`java -jar --staticPath="./restful_api" vrasland.jar`
 
-5. 尝试在浏览器上进行访问
+### 5. 尝试在浏览器上进行访问
   ```
   >>> get http://localhost:8080/users
   
