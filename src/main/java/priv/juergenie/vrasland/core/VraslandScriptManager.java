@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
@@ -28,7 +29,7 @@ public class VraslandScriptManager {
     private ScriptEngineManager manager = new ScriptEngineManager();
 
     // 回调函数对象，包含了一些列函数引用，该对象用于构造针对脚本执行的 AOP 流程。
-    @Resource
+    @Resource(name = "callback")
     private VraslandScriptManagerCallback callback;
 
     /**
