@@ -57,7 +57,9 @@ public class ScriptObject {
     }
 
     public ScriptObject bind(String key, Object value) {
-        return this.bind(new HashMap<>(){{put(key, value);}});
+        var map = new HashMap<String, Object>();
+        map.put(key, value);
+        return this.bind(map);
     }
 
     public ScriptObject bind(Map<String, Object> args) {

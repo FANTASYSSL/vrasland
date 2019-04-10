@@ -1,5 +1,6 @@
 package priv.juergenie.vrasland.controller;
 
+import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -13,21 +14,23 @@ import priv.juergenie.vrasland.utils.FileUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileNotFoundException;
 import java.util.Map;
 
 @RestController
 public class LuaRepeatController {
     private String staticPath;
-
-    @Resource
     private VraslandScriptManager vraslandScriptManager;
 
-    public LuaRepeatController(@Value("${dbPath:}")String dbPath,
-                               @Value("${staticPath:./restful api}")String staticPath) {
-        // TODO: 完成初始化操作，以及脚本执行环境初始化（注入数据库操作对象等）
+    // 使用构造函数进行注入
+    public LuaRepeatController(
+            @Value("${staticPath:./restful api}")String staticPath,
+            VraslandScriptManager vraslandScriptManager,
+            DB db
+    ) {
+        // 完成初始化操作，以及脚本执行环境初始化（注入数据库操作对象等）
         this.staticPath = staticPath;
-        DBMaker.fileDB((dbPath == null || dbPath.isEmpty() ? "." : dbPath) + "/vrasland.db");
+        this.vraslandScriptManager = vraslandScriptManager;
+        this.vraslandScriptManager.bind("database", db);    // 当前选择直接注入数据库对象，之后应当改换为注入操作对象（DAO）
     }
 
     @GetMapping("/**")

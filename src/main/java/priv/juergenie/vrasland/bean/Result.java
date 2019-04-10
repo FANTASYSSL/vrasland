@@ -45,4 +45,7 @@ public class Result<T> {
     public ResponseEntity<Result<T>> toResponse(int status) {
         return this.toResponse(HttpStatus.valueOf(status));
     }
+
+    public final static ResponseEntity
+            RESOURCE_NOT_FOUND = new Result<String>().notOk().send("not found resources.").toResponse(HttpStatus.NOT_FOUND);
 }
