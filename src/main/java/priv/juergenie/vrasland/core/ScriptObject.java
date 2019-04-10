@@ -3,6 +3,9 @@ package priv.juergenie.vrasland.core;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.FileUtils;
+import org.luaj.vm2.LuaFunction;
+import org.luaj.vm2.Varargs;
+import priv.juergenie.vrasland.utils.LuaScriptUtil;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -20,9 +23,12 @@ public class ScriptObject {
     private String fileName;
     @Getter @Setter
     private String source;
+    @Getter @Setter
+    private Object initResult;
     private File file;
 
-    public ScriptObject(ScriptEngine engine, File file) throws IOException {
+
+    public ScriptObject(ScriptEngine engine, File file) throws IOException, ScriptException {
         this(engine, file, file.getAbsolutePath(), FileUtils.readFileToString(file, "utf-8"));
 //        this.engine = engine;
 //        this.file = file;
@@ -30,7 +36,7 @@ public class ScriptObject {
 //        this.source = FileUtils.readFileToString(file, "utf-8");
     }
 
-    public ScriptObject(ScriptEngine engine, String source) {
+    public ScriptObject(ScriptEngine engine, String source) throws ScriptException {
         this(engine, null, ":memory:", source);
 //        this.engine = engine;
 //        this.file = null;
@@ -38,11 +44,16 @@ public class ScriptObject {
 //        this.source = source;
     }
 
-    private ScriptObject(ScriptEngine engine, File file, String fileName, String source) {
+    private ScriptObject(ScriptEngine engine, File file, String fileName, String source) throws ScriptException {
         this.engine = engine;
         this.file = file;
         this.fileName = fileName;
         this.source = source;
+        this.initResult = this.init();
+    }
+
+    public boolean hasAttribute(String name) {
+        return this.engine.get(name) != null;
     }
 
     public ScriptObject bind(String key, Object value) {
@@ -58,11 +69,16 @@ public class ScriptObject {
         return this;
     }
 
-    public <T> T eval(Class<T> cls) throws ScriptException {
-        var result = this.engine.eval(this.source);
-        if (cls.isInstance(result))
-            return cls.cast(result);
-        else
-            return null;
+    public Object init() throws ScriptException {
+        return this.engine.eval(this.source);
+    }
+
+    public Varargs callFunc(String funcName, Object... args) {
+        var function = (LuaFunction) this.engine.get(funcName);
+        Varargs result = null;
+        if (function != null)
+            result = function.invoke(LuaScriptUtil.convertJavaBeans(args));
+
+        return result;
     }
 }

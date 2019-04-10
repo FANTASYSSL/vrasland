@@ -2,8 +2,7 @@ package priv.juergenie.vrasland.utils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.luaj.vm2.LuaTable;
-import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -90,6 +89,63 @@ public class LuaScriptUtil {
             }
         }
         logger.debug("convert [{}]", result);
+        return result;
+    }
+
+    public static LuaTable convertJavaTable(Map map) {
+        var result = new LuaTable();
+        if (map != null) {
+            for (var key : map.keySet()) {
+                var value = convertJavaBean(map.get(key));
+                result.set(key.toString(), value);
+            }
+        }
+        return result;
+    }
+
+    public static LuaTable convertJavaList(Object[] list) {
+        var result = new LuaTable();
+        for (int i = 1; i <= list.length; i++)
+            result.set(i, convertJavaBean(list[i-1]));
+
+        return result;
+    }
+
+    public static LuaValue convertJavaBean(Object bean) {
+        LuaValue result = null;
+
+        if (bean != null) {
+            if      (bean instanceof String)
+                result = LuaValue.valueOf((String)bean);
+
+            else if (bean instanceof Number)
+                result = LuaValue.valueOf(((Number)bean).doubleValue());
+
+            else if (bean instanceof Boolean)
+                result = LuaValue.valueOf((Boolean)bean);
+
+            else if (bean instanceof byte[])
+                result = LuaValue.valueOf((byte[])bean);
+
+            else if (bean instanceof Map)
+                result = convertJavaTable((Map)bean);
+
+            else if (bean instanceof Object[])
+                result = convertJavaList((Object[])bean);
+
+            else
+                result = new LuaUserdata(bean);
+        }
+
+        return result;
+    }
+
+    public static LuaValue[] convertJavaBeans(Object[] beans) {
+        var result = new LuaValue[beans.length];
+
+        for (int i = 0; i < beans.length; i++)
+            result[i] = convertJavaBean(beans[i]);
+
         return result;
     }
 }

@@ -21,7 +21,7 @@ public class LuaScriptUtilTest {
                 "\n" +
                 "return 1,2,tb,{'23333'}";
         ScriptObject object = vraslandScriptManager.getScriptObject(script);
-        Object[] result = object.eval(Object[].class);
+        Object[] result = (Object[])object.init();
         for (var obj: result) {
             System.out.println(LuaScriptUtil.convertLuaValue(obj));
         }
