@@ -64,5 +64,5 @@
   -- 使用java的List
   local result = luajava.newInstance("java.util.ArrayList")
   result:add({...})
-  return result:asArray(), '...', 200
+  return result, '...', 200
   ```
