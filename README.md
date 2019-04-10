@@ -1,6 +1,7 @@
 ## 关于 VRASLAND
 
-> 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的请求管理，无需注册路由，直接按照 API 的模样搭建路径即可。
+> 来试一下用搭建 FTP 的方式搭建 API 吧！
+> 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的 APIO 管理，无需注册路由，直接按照 API 的模样搭建路径即可。
 
 ## 如何使用
 
