@@ -7,7 +7,7 @@
     <groupId>priv.juergenie</groupId>
     <artifactId>vrasland</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0.8-SNAPSHOT</version>
     <properties>
         <maven.compiler.source>12</maven.compiler.source>
         <maven.compiler.target>12</maven.compiler.target>
