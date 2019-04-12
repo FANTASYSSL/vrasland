@@ -1,7 +1,7 @@
 ## 关于 VRASLAND
 
 > 来试一下用搭建 FTP 的方式搭建 API 吧！
-> 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的 APIO 管理，无需注册路由，直接按照 API 的模样搭建路径即可。
+> 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的 API 管理，无需注册路由，直接按照 API 的模样搭建路径即可。
 
 ## 如何使用
 
@@ -27,7 +27,7 @@
   ```lua
   -- users.lua
   -- 这是一个get api，将会响应对于 /users 的 get 请求
-  function get():
+  function get()
     local users = {
       {name = "Tom", age = 21, gender = 0},
       {name = "Shelly", age = 19, gender = 1}
