@@ -32,6 +32,9 @@ public class VraslandScriptManager {
     @Resource(name = "callback")
     private VraslandScriptManagerCallback callback;
 
+    @Resource
+    private VraslandScriptFileParser vraslandScriptFileParser;
+
     /**
      * 脚本执行函数，将会返回一个已生成的响应实体。
      * @param filePath 脚本文件路径
@@ -43,17 +46,20 @@ public class VraslandScriptManager {
      * @see priv.juergenie.vrasland.core.ScriptObject
      */
     public ResponseEntity runScriptByPath(String filePath, String func, Map<String, Object> bind, Object... args) {
-        if (!callback.checkFilePath(filePath))
-            return callback.getResponse();
-
-        var file = new File(filePath);
-        if (!callback.checkFileIsExists(file))
-            return callback.getResponse();
+//        if (!callback.checkFilePath(filePath))
+//            return callback.getResponse();
+//
+//        var file = new File(filePath);
+//        if (!callback.checkFileIsExists(file))
+//            return callback.getResponse();
 
         ResponseEntity response;
         try {
             // 获取脚本对象
-            var script = this.getScriptObject(file);
+//            var script = this.getScriptObject(file);
+            var script = this.vraslandScriptFileParser.scriptFileParse(filePath);
+            if (script == null)
+                return new Result<String>().notOk().send("not found!").toResponse(HttpStatus.NOT_FOUND);
 
             // 检测是否有对应的处理函数的定义，若没有，则需要返回405
             if (!script.hasAttribute(func))
@@ -82,6 +88,7 @@ public class VraslandScriptManager {
                 response = result.toResponse(state);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             response = new Result<>().notOk().send("internal error.").body(e).toResponse(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return response;
