@@ -1,97 +1,94 @@
 ## 关于 VRASLAND
 
-> 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的请求管理，无需注册路由，直接按照 API 的模样搭建路径即可。
+> 来试一下用搭建 FTP 的方式搭建 API 吧！
+> 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的 API 管理，无需注册路由，直接按照 API 的模样搭建路径即可。
 
 ## 如何使用
 
 ### 1. 同步该库
-  > git clone https://github.com/JuerGenie/vransland
+`git clone https://github.com/JuerGenie/vransland`
 
 ### 2. 依据 REST API 的结构，创建文件夹
   ```
   示例：
   
-  |-+ /project
-    |-- <other project file>
-    |-+ /restful_api
-      |-- users.lua
-      |-+ /users
-        |-- {users}.lua
+  --+ /project
+    |
+    +-- <other project file>
+    |
+    +-+ /api
+      |
+      +-- users.js
+      |
+      +-+ /users
+        |
+        +-- {index}.js
+        |
+        +-+ /{index}
+          |
+          +-- score.js
   ```
-  > 注：{users}.lua 形式的API的支持尚未实现，但已在未来的更新计划中。
-  
+  > 已于 1.0(vl-k) 中支持复杂路径映射。
+
+  文件名      | 对应路径              | 说明
+  :----      | :----                | :----
+  /api       | *                 | 这是一个文件夹，也是所有API的根目录，象征着 API 的 '/' 路径。<br />这个名称并不是固定的，你可以通过修改配置文件来进行定制。 
+  users.js   | /users               | 这将是第一个处理脚本，用于处理类似 getAll、put 和 post 的针对 users 的请求。<br />看起来它就像是一个普通的资源？这就对了。 
+  /users     | *                 | 这是针对该资源（Users）的更细分的资源，它就是一个文件夹，用于映射路径。
+  {index}.js | /users/{index}       | 这是针对请求路径中的参数进行的映射，注意，'{index}' 这个名称是必须的。<br />若要进行映射，请将相应部分替换为 {index}。<br/>这些被匹配的参数会被放置到脚本中的全局变量 'args' 中。<br />args 将会是一个数组，具体可以通过 {index}.js 来看看该如何使用。 
+  /{index}   | *                 | 与 {index}.js 类似，这个文件夹也将映射路径的一部分。<br />被匹配的参数同样会被（按顺序）放置进 args 中。 
+  score.js   | /users/{index}/score | 这对应的是相匹配的资源下的细项资源。
+
 ### 3. 在相应位置填入对应脚本
-  > 如同 step.2 中所示那样，脚本内容如下：
-  ```lua
-  -- users.lua
-  -- 这是一个get api，将会响应对于 /users 的 get 请求，其他请求的响应函数类似。
-  function get():
-    local users = {
-      {name = "Tom", age = 21, gender = 0},
-      {name = "Shelly", age = 19, gender = 1}
-    }
-    return users, 'get success', 200  -- 返回值为如下结构： <result object>, [result message, [response status]]
-  end
-  
-  -- 接收参数，请求传递过来的body会被转换为lua table。
-  function put(args):
-    local db = database:treeSet("users"):maxNodeSize(64):createOrOpen()
-    local scriptUtil = luajava.bindClass("priv.juergenie.vrasland.utils.LuaScriptUtil")
-    
-    local user = {}
-    user['name'] = args:get('name')
-    user['age'] = args:get('age')
-    user['gender'] = args:get('gender')
-    -- 在此示例中直接使用数据库对象进行存取，需要使用预先封装好的工具转换为java对象，这是为了保证之后的可迁移性。
-    -- 之后如果替换为 DAO 的话，可在 DAO 中进行转换。
-    db:add(scriptUtil:convertLuaTable(user))
-    
-    return args, 'put success', 200
-  end
-  
-  -- 其他未拥有对应函数的请求将被拒绝，请求者将会收到 405（未被允许的请求方式）。
-  ```
-  
+  > 如同 step.2 中所示那样放置，脚本内容如下：
+  >   ```js
+  > // users.js
+  > // 在 vl-k (vrasland-kotlin) 版本中，默认使用 javascript 作为处理脚本
+  > function get() {
+  >   var users = [
+  >     {name: "Tom", age: 21, gender: "male"},
+  >     {name: "Shelly", age: 19, gender: "female"}
+  >   ]
+  >   return {
+  >     status: 200,         // 用于响应的 HTTP STATUS
+  >     message: "on work!", // 用于响应的友好信息
+  >     data: users          // 用于响应的数据内容
+  >   }
+  > }
+  >   ```
+
 ### 4. 启动库
-  > 若使用 jar 包形式，请使用：`java -jar --staticPath="./restful_api" vrasland.jar`
+`java -jar vrasland.jar`
 
 ### 5. 尝试在浏览器上进行访问
-  ```
-  >>> get http://localhost:8080/users
-  
-  Response Status: 200
-  {
-    "statue": "ok",
-    "message": "get success!",
-    "meta": null,
-    "data": {
-      "1": {
-        "name": "Tom",
-        "age": 21,
-        "gender": 0
-      },
-      "2": {
-        "name": "Shelly",
-        "age": 19,
-        "gender": 1
-      }
+
+  ```shell
+>>> get http://localhost:8080/users
+{
+  "statue": "ok",
+  "message": "get success!",
+  "data": [
+    {
+      "name": "Tom",
+      "age": 21,
+      "gender": "male"
+    },
+    {
+      "name": "Shelly",
+      "age": 19,
+      "gender": "female
     }
-  }
+  ]
+}
   
-  >>> post http://localhost:8080/users
-  
-  Response Status: 405
-  {
-    "statue": "error",
-    "message": "not allowable request.",
-    "meta": null,
-    "data": null
+>>> get http://localhost:8080/users/1
+{
+  "status": "ok",
+  "message": "get success!",
+  "data": {
+    "name": "Shelly",
+    "age": 19,
+    "gender": "female
   }
-  ```
-  > 注：由于 Lua 中并不存在真正意义上的 List，因此返回后的值最后会转变成对象形式(java.util.HashMap)。所幸的是，这个形式在使用上并不会对JS造成太大的影响（除了 Lua 的 index 是从1开始，这是可以解决的）。后续将会尝试解决这个问题，在问题被解决之前，推荐使用以下形式来绕过这个问题：
-  ```lua
-  -- 使用java的List
-  local result = luajava.newInstance("java.util.ArrayList")
-  result:add({...})
-  return result, '...', 200
+}
   ```
