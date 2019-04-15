@@ -25,13 +25,15 @@ class Mapper: FromJsonMapper, ToJsonMapper {
 
 fun main() {
     val routerHandler = RouterHandler()
-    routerHandler.scriptManager.from(CONFIG["server"]["apiPath"]).using(CONFIG["script"]["extension"])
+    routerHandler.scriptManager.
+            from(CONFIG.get("server.apiPath", "./api")).
+            using(CONFIG.get("script.extension", "js"))
 
     val mapper = Mapper()
     JavalinJson.fromJsonMapper = mapper
     JavalinJson.toJsonMapper = mapper
 
-    val app = Javalin.create().start(CONFIG["server"]["port"].toInt())
+    val app = Javalin.create().start(CONFIG.get("server.port", "8080").toInt())
     app.exception(Exception::class.java) { exception, context ->
 //        log.warn("something error happened on request(${context.path()}): ${exception.message}")
         exception.printStackTrace()
