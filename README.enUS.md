@@ -3,6 +3,10 @@
 > Try to build RESTful API Server like build FTP server.
 > This is an just focus on RESTful API's webapp framework, mapping request to filesystem's path, not need to registry route, you can do that just need to create some directory and script.
 
+## Other Language Version
+[简体中文(zhCN)](https://github.com/JuerGenie/vrasland/blob/master/README.md)
+[English(enUS)](https://github.com/JuerGenie/vrasland/blob/master/README.enUS.md)
+
 ## How to use
 
 ### 1. Clone this repository

@@ -2,6 +2,11 @@
 
 > 来试一下用搭建 FTP 的方式搭建 API 吧！
 > 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的 API 管理，无需注册路由，直接按照 API 的模样搭建路径即可。
+> 基于 kotlin + javalin + javascript，**快速启动**，**快速搭建**，**快速调整**。动态解析脚本，无论是添加、调整或者删除 API，都**无需**频繁重启服务器，**任何改动都会立刻生效**！
+
+## 其他语言版本说明
+[简体中文(zhCN)](https://github.com/JuerGenie/vrasland/blob/master/README.md)
+[English(enUS)](https://github.com/JuerGenie/vrasland/blob/master/README.enUS.md)
 
 ## 如何使用
 
