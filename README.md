@@ -40,29 +40,30 @@
   score.js   | /users/{index}/score | 这对应的是相匹配的资源下的细项资源。
 
 ### 3. 在相应位置填入对应脚本
-  > 如同 step.2 中所示那样放置，脚本内容如下：
-  >   ```js
-  > // users.js
-  > // 在 vl-k (vrasland-kotlin) 版本中，默认使用 javascript 作为处理脚本
-  > function get() {
-  >   var users = [
-  >     {name: "Tom", age: 21, gender: "male"},
-  >     {name: "Shelly", age: 19, gender: "female"}
-  >   ]
-  >   return {
-  >     status: 200,         // 用于响应的 HTTP STATUS
-  >     message: "on work!", // 用于响应的友好信息
-  >     data: users          // 用于响应的数据内容
-  >   }
-  > }
-  >   ```
+如同 step.2 中所示那样放置，脚本内容如下：
+```js
+// users.js
+// 在 vl-k (vrasland-kotlin) 版本中，默认使用 javascript 作为处理脚本
+function get() {
+  var users = [
+    {name: "Tom", age: 21, gender: "male"},
+    {name: "Shelly", age: 19, gender: "female"}
+  ];
+  
+  return {
+    status: 200,         // 用于响应的 HTTP STATUS
+    message: "on work!", // 用于响应的友好信息
+    data: users          // 用于响应的数据内容
+  };
+}
+```
 
 ### 4. 启动库
 `java -jar vrasland.jar`
 
 ### 5. 尝试在浏览器上进行访问
 
-  ```shell
+```shell
 >>> get http://localhost:8080/users
 {
   "statue": "ok",
@@ -91,4 +92,4 @@
     "gender": "female
   }
 }
-  ```
+```
