@@ -6,7 +6,7 @@ import java.io.Serializable
 class Result<T>: Serializable {
     private var status: String = Constant.RESULT_OK
     private var message: String = "nothing to result."
-    private var body: T? = null
+    private var data: T? = null
 
     fun isOk(): Result<T> {
         this.status = Constant.RESULT_OK
@@ -28,12 +28,12 @@ class Result<T>: Serializable {
         return this
     }
 
-    fun use(body: T?): Result<T> {
-        this.body = body
+    fun use(data: T?): Result<T> {
+        this.data = data
         return this
     }
 
     override fun toString(): String {
-        return "Result(status=$status, message=$message, body=$body)"
+        return "Result(status=$status, message=$message, data=$data)"
     }
 }
