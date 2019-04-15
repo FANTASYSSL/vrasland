@@ -2,6 +2,7 @@ package priv.juergenie.vrasland.core;
 
 import lombok.Data;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.util.function.Function;
 
 @Data
+@Configuration
 public class VraslandScriptManagerCallback {
     /**
      * 线程独立的存储变量，用于在每个访问线程中存储check结果。
@@ -87,8 +89,7 @@ public class VraslandScriptManagerCallback {
      * 默认的callback处理对象，若之后要进行覆盖，可直接覆写一个callback bean。
      * @return callback对象
      */
-    @Bean("callback")
-    @Order(9999)
+    @Bean(name = "callback")
     public static VraslandScriptManagerCallback callback() {
         var result = new VraslandScriptManagerCallback();
 
