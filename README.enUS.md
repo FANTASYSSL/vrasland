@@ -1,16 +1,16 @@
-## 关于 VRASLAND
+## About VRASLAND
 
-> 来试一下用搭建 FTP 的方式搭建 API 吧！
-> 这是一个专注于 RESTful API 的 Webapp 框架，提供基于路径的 API 管理，无需注册路由，直接按照 API 的模样搭建路径即可。
+> Try to build RESTful API Server like build FTP server.
+> This is an just focus on RESTful API's webapp framework, mapping request to filesystem's path, not need to registry route, you can do that just need to create some directory and script.
 
-## 如何使用
+## How to use
 
-### 1. 同步该库
+### 1. Clone this repository
 `git clone https://github.com/JuerGenie/vransland`
 
-### 2. 依据 REST API 的结构，创建文件夹
+### 2. Build file struct like your API's struct
   ```
-  示例：
+  E.G.：
   
   --+ /project
     |
@@ -28,9 +28,9 @@
           |
           +-- score.js
   ```
-  > 已于 1.0(vl-k) 中支持复杂路径映射。
+  > On version 1.0(vl-k), Complex path (contain params, like '/users/{index}/info') mapping is supported.
 
-  文件名      | 对应路径              | 说明
+  File      | Request Map              | Description
   :----      | :----                | :----
   /api       | *                 | 这是一个文件夹，也是所有API的根目录，象征着 API 的 '/' 路径。<br />这个名称并不是固定的，你可以通过修改配置文件来进行定制。 
   users.js   | /users               | 这将是第一个处理脚本，用于处理类似 getAll、put 和 post 的针对 users 的请求。<br />看起来它就像是一个普通的资源？这就对了。 
@@ -39,11 +39,11 @@
   /{index}   | *                 | 与 {index}.js 类似，这个文件夹也将映射路径的一部分。<br />被匹配的参数同样会被（按顺序）放置进 args 中。 
   score.js   | /users/{index}/score | 这对应的是相匹配的资源下的细项资源。
 
-### 3. 在相应位置填入对应脚本
-如同 step.2 中所示那样放置，脚本内容如下：
+### 3. Write some script and put it on the true path that you want to map
+Just put it on like step.2 said, the script file's content like this:
 ```js
 // users.js
-// 在 vl-k (vrasland-kotlin) 版本中，默认使用 javascript 作为处理脚本
+// On vl-k (vrasland-kotlin) ver, javascript is the default language to handle request.
 function get() {
   var users = [
     {name: "Tom", age: 21, gender: "male"},
@@ -51,17 +51,17 @@ function get() {
   ];
   
   return {
-    status: 200,         // 用于响应的 HTTP STATUS
-    message: "on work!", // 用于响应的友好信息
-    data: users          // 用于响应的数据内容
+    status: 200,         // response's HTTP STATUS
+    message: "on work!", // response's friendly message
+    data: users          // response's data
   };
 }
 ```
 
-### 4. 启动库
+### 4. Run the library
 `java -jar vrasland.jar`
 
-### 5. 尝试在浏览器上进行访问
+### 5. Try to invoke path on browser
 
 ```shell
 >>> get http://localhost:8080/users
