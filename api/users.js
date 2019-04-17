@@ -16,5 +16,19 @@ function get() {
     }
 }
 
+// post handler
+function post() {
+    // result must be an object or null
+    return {
+        status: 200,
+        message: "ok!",
+        data: {
+            say: "hello world!",
+            do: "post!",
+            body: JSON.parse(context.body())
+        }
+    }
+}
+
 // give engine something result for script's initialize
 var result = "it's working!";
