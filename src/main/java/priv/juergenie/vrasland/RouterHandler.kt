@@ -15,19 +15,19 @@ class RouterHandler {
     }
 
     fun postHandler(context: Context) {
-
+        callScript(context, "post")
     }
 
     fun putHandler(context: Context) {
-
+        callScript(context, "put")
     }
 
     fun deleteHandler(context: Context) {
-
+        callScript(context, "delete")
     }
 
     fun patchHandler(context: Context) {
-
+        callScript(context, "patch")
     }
 
     private fun callScript(context: Context, funcName: String) {
