@@ -65,12 +65,16 @@ class Configure(private val path: String, newFile: Boolean = false) {
         init {
             // 服务器相关配置
             DEFAULT["server"] = Section(DEFAULT, "server")
-            DEFAULT["server"]["port"] = "8080"          // 服务器监听端口
-            DEFAULT["server"]["apiPath"] = "./api"      // 服务器 API 所在根路径
+            DEFAULT["server"]["port"] = "8080"              // 服务器监听端口
             // 脚本解析器相关配置
             DEFAULT["script"] = Section(DEFAULT, "script")
-            DEFAULT["script"]["extension"] = "js"       // 脚本后缀名
-            DEFAULT["script"]["urlParser"] = "default"  // 请求路径解析器配置，如果要添加的话，请向 RequestUrlParser.INSTANCE 中添加: RequestUrlParser.INSTANCE[name] = {//...}
+            DEFAULT["script"]["apiPath"] = "./api"          // 服务器 API 所在根路径
+            DEFAULT["script"]["extension"] = "js"           // 脚本后缀名
+            DEFAULT["script"]["urlParser"] = "default"      // 请求路径解析器配置，如果要添加的话，请向 RequestUrlParser.INSTANCE 中添加: RequestUrlParser.INSTANCE[name] = {//...}
+            // 内置数据库相关配置
+            DEFAULT["database"] = Section(DEFAULT, "database")
+            DEFAULT["database"]["dbpath"] = "./vrasland.db" // 数据库存放路径
+            DEFAULT["database"]["concurrencyScale"] = "64"  // 数据库并发量限制
         }
     }
 

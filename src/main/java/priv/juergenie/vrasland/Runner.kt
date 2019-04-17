@@ -5,14 +5,10 @@ import io.javalin.Javalin
 import io.javalin.json.FromJsonMapper
 import io.javalin.json.JavalinJson
 import io.javalin.json.ToJsonMapper
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import priv.juergenie.vrasland.common.Constant.Companion.CONFIG
 
-val log: Logger = LoggerFactory.getLogger("main")
-
 class Mapper: FromJsonMapper, ToJsonMapper {
-    val gson = Gson()
+    private val gson = Gson()
 
     override fun map(obj: Any): String {
         return gson.toJson(obj)
@@ -24,18 +20,20 @@ class Mapper: FromJsonMapper, ToJsonMapper {
 }
 
 fun main() {
+    // 初始化路由处理器
     val routerHandler = RouterHandler()
     routerHandler.scriptManager.
-            from(CONFIG.get("server.apiPath", "./api")).
+            from(CONFIG.get("script.apiPath", "./api")).
             using(CONFIG.get("script.extension", "js"))
 
+    // 初始化 JSON 解析器，使用 Gson 替换默认的 Jackson
     val mapper = Mapper()
     JavalinJson.fromJsonMapper = mapper
     JavalinJson.toJsonMapper = mapper
 
+    // 启动应用
     val app = Javalin.create().start(CONFIG.get("server.port", "8080").toInt())
     app.exception(Exception::class.java) { exception, context ->
-//        log.warn("something error happened on request(${context.path()}): ${exception.message}")
         exception.printStackTrace()
         val result = Result<Exception>().
                 isError().
@@ -44,6 +42,7 @@ fun main() {
         context.json(result).
                 status(500)
     }
+    // 添加通用路由映射
     app.get("/*", routerHandler::getHandler)
     app.post("/*", routerHandler::postHandler)
     app.put("/*", routerHandler::putHandler)

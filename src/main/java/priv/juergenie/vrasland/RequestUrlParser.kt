@@ -35,12 +35,12 @@ class RequestUrlParser private constructor() {
             INSTANCE.parserMapper["default"] = fun(path): ScriptObject? {
                 val result: ScriptObject?
                 val extension = Constant.CONFIG["script"]["extension"]
-                val fullPath = Constant.CONFIG["server"]["apiPath"] + path
+                val fullPath = Constant.CONFIG["script"]["apiPath"] + path
                 val args = ArrayList<String>()
 
                 if (!Files.exists(Path.of("$fullPath.$extension"))) {
                     val sections = path.split('/')
-                    val buffer = StringBuffer("./${Constant.CONFIG["server"]["apiPath"]}")
+                    val buffer = StringBuffer("./${Constant.CONFIG["script"]["apiPath"]}")
                     for (section in sections) {
                         val last = if (sections.last() == section) ".$extension" else ""
                         var tempPath = "$buffer/$section$last"
