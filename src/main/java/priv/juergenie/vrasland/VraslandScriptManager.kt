@@ -1,10 +1,15 @@
 package priv.juergenie.vrasland
 
 import io.javalin.Context
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor
+import org.apache.commons.io.monitor.FileAlterationMonitor
+import org.apache.commons.io.monitor.FileAlterationObserver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import priv.juergenie.vrasland.common.Constant
+import priv.juergenie.vrasland.common.Constant.Companion.CONFIG
 import priv.juergenie.vrasland.database.DbManager
+import java.io.File
+import java.lang.UnsupportedOperationException
 import javax.script.Invocable
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
@@ -13,14 +18,20 @@ import kotlin.collections.LinkedHashMap
 class VraslandScriptManager {
     private val scriptManager = ScriptEngineManager()
     private val global = HashMap<String, Any>()
-    private val module = ModuleMap()
+    val module = ModuleMap()
+    val moduleManager = ModuleScriptManager(
+            this,
+            CONFIG.get("script.modules", "./scriptlibs"),
+            CONFIG.get("script.interval", "5000").toLong(),
+            CONFIG.get("script.extension", "js")
+    )
 
     val engine: ScriptEngine get() = this.scriptManager.getEngineByExtension(this.extension)
-    val parser = RequestUrlParser.INSTANCE.useManager(this)[Constant.CONFIG["script"]["urlParser"]]
+    val parser = RequestUrlParser.INSTANCE.useManager(this)[CONFIG.get("script.urlParser", "default")]
 
     // 可塑属性
     private var extension   = "js"
-    private var scriptPath  = "./restful api"
+    private var scriptPath  = "./api"
     val converter   = VraslandConverter.DEFAULT
     val aop         = VraslandAopObject.DEFAULT
 
@@ -40,8 +51,11 @@ class VraslandScriptManager {
 
         val vraslandModule = LinkedHashMap<String, Any>()
         vraslandModule["database"] = DbManager
-        // 注入 vrasland 框架相关模块
-        module["vrasland"] = vraslandModule
+        // 注入 vrasland 框架相关模块，使用时，通过 module.import("vrasland") 引用
+        module.registry("vrasland", vraslandModule)
+
+        // 启动模块加载器
+        moduleManager.start()
     }
 
     /**
@@ -89,11 +103,88 @@ class VraslandScriptManager {
 }
 
 /**
+ * 转换器，用于转换调用者类型与脚本内类型。
+ * @param to 从 kotlin 对象类型转换为目标脚本引擎支持的对象类型的函数
+ * @param from 从脚本引擎对象类型转换为 kotlin 对象类型的函数
+ */
+data class VraslandConverter(
+        var to: (Any) -> Any,
+        var from: (Any) -> Any
+) {
+    companion object {
+        private val log = LoggerFactory.getLogger(VraslandConverter::class.java)
+        /**
+         * 默认转换器对象，内部不包含任何实现。
+         */
+        val DEFAULT = VraslandConverter(
+                { log.warn("call converter::to, but it haven't invalid function.") },
+                { log.warn("call converter::from, but it haven't invalid function.") }
+        )
+    }
+}
+
+/**
+ * AOP对象，用于脚本调用前后的流程处理。
+ * @param before 脚本被调用前，调用该函数
+ * @param after 脚本被调用后，调用该函数，该函数可对脚本返回值进行处理，然后返回一个处理后的返回值（必须有返回值）
+ */
+data class VraslandAopObject(
+        var before: (ScriptObject, Context) -> Unit,
+        var after: (ScriptObject, Context, Any) -> Any
+) {
+    companion object {
+        private val log = LoggerFactory.getLogger(VraslandAopObject::class.java)
+        val DEFAULT = VraslandAopObject(
+                { _, _ ->
+                    log.warn("call VraslandAopObject.before.")
+                },
+                { _, _, result ->
+                    log.warn("call VraslandAopObject.after.")
+                    result
+                }
+        )
+    }
+}
+
+/**
+ * 模块存储器，用于提供一个简易的脚本模块构建机制。
+ * 该机制主要用于提高脚本代码的可重用性，并使模块脚本的内容能够常驻（框架本身的脚本执行是即用即丢的，不会常驻于内存之中）。
+ */
+class ModuleMap {
+    private val mapper = LinkedHashMap<String, Any>()
+
+    fun exists(moduleName: String): Boolean {
+        return "module_$moduleName" in mapper.keys
+    }
+
+    fun registry(moduleName: String, module: Any): ModuleMap {
+        this.mapper["module_$moduleName"] = module
+        return this
+    }
+
+    fun remove(moduleName: String) {
+        val module = this.mapper.remove("module_$moduleName") as ScriptObject
+    }
+
+    fun import(moduleName: String): Any? {
+        return this.mapper["module_$moduleName"]
+    }
+
+    operator fun get(key: String): Any? {
+        return this.mapper["module_$key"]
+    }
+
+    operator fun set(key: String, value: Any) {
+        throw UnsupportedOperationException("module cannot be set: (key: $key, value: $value)\nwould this operation is you want? > module.registry(...)")
+    }
+}
+
+/**
  * 脚本对象的封装，对应每一个脚本（即每一个 ScriptObject 都对应一个 API），可通过 call 函数调用脚本内的相关函数。
  * @param engine 脚本引擎对象
  * @param source 脚本源码，该源码将会在加载的时候被调用一次
  */
-class ScriptObject(private val engine: ScriptEngine, private val source: String) {
+open class ScriptObject(private val engine: ScriptEngine, private val source: String) {
     private val initResult: String?
     companion object {
         val log: Logger = LoggerFactory.getLogger(ScriptObject::class.java)
@@ -150,61 +241,63 @@ class ScriptObject(private val engine: ScriptEngine, private val source: String)
     }
 }
 
-/**
- * 转换器，用于转换调用者类型与脚本内类型。
- * @param to 从 kotlin 对象类型转换为目标脚本引擎支持的对象类型的函数
- * @param from 从脚本引擎对象类型转换为 kotlin 对象类型的函数
- */
-data class VraslandConverter(
-        var to: (Any) -> Any,
-        var from: (Any) -> Any
-) {
+class ModuleScriptManager(val manager: VraslandScriptManager, filePath: String, interval: Long, extension: String):
+        FileAlterationListenerAdaptor() {
+    private val monitor = FileAlterationMonitor(interval)
+    private val observer = FileAlterationObserver(filePath) {
+        // 过滤出所有以指定后缀名结尾的脚本
+        it.name.endsWith(".$extension")
+    }
+    private val directory = File(filePath)
+
+    init {
+        monitor.addObserver(observer)
+        observer.addListener(this)
+    }
+
+    fun start() {
+        this.monitor.start()
+    }
+
+    fun stop() {
+        this.monitor.stop()
+    }
+
     companion object {
-        private val log = LoggerFactory.getLogger(VraslandConverter::class.java)
-        /**
-         * 默认转换器对象，内部不包含任何实现。
-         */
-        val DEFAULT = VraslandConverter(
-                { log.warn("call converter::to, but it haven't invalid function.") },
-                { log.warn("call converter::from, but it haven't invalid function.") }
-        )
-    }
-}
-
-/**
- * AOP对象，用于脚本调用前后的流程处理。
- * @param before 脚本被调用前，调用该函数
- * @param after 脚本被调用后，调用该函数，该函数可对脚本返回值进行处理，然后返回一个处理后的返回值（必须有返回值）
- */
-data class VraslandAopObject(
-        var before: (ScriptObject, Context) -> Unit,
-        var after: (ScriptObject, Context, Any) -> Any
-) {
-    companion object {
-        private val log = LoggerFactory.getLogger(VraslandAopObject::class.java)
-        val DEFAULT = VraslandAopObject(
-                { _, _ ->
-                    log.warn("call VraslandAopObject.before.")
-                },
-                { _, _, result ->
-                    log.warn("call VraslandAopObject.after.")
-                    result
-                }
-        )
-    }
-}
-
-/**
- * 模块存储器，用于提供一个简易的脚本模块构建机制。
- * 该机制主要用于提高脚本代码的可重用性，并使模块脚本的内容能够常驻（框架本身的脚本执行是即用即丢的，不会常驻于内存之中）。
- */
-class ModuleMap: LinkedHashMap<String, Any>() {
-    fun registry(moduleName: String, module: Any): ModuleMap {
-        this["module_$moduleName"] = module
-        return this
+        val logger: Logger = LoggerFactory.getLogger(ModuleScriptManager::class.java)
     }
 
-    fun import(moduleName: String): Any? {
-        return this["module_$moduleName"]
+    override fun onDirectoryDelete(directory: File) {
+        if (this.directory == directory) {
+            logger.warn("directory on delete, listener will be stop: ${directory.name}")
+            observer.removeListener(this)
+        }
+    }
+
+    override fun onFileCreate(file: File) {
+        logger.info("script was on created: ${file.path}")
+        this.loadScript(file)
+    }
+
+    override fun onFileChange(file: File) {
+        logger.info("script was on changed: ${file.path}")
+        this.loadScript(file)
+    }
+
+    override fun onFileDelete(file: File) {
+        logger.info("script was on deleted, and remove it from module map: ${file.path}")
+        this.manager.module.remove(file.nameWithoutExtension)
+    }
+
+    private fun loadScript(file: File) {
+        val script = manager.getScriptObject(file.absolutePath)
+        if (script != null) {
+            val scriptName = file.nameWithoutExtension
+            // 若已存在，则将其移除。
+            if (manager.module.exists(scriptName)) {
+                manager.module.remove(scriptName)
+            }
+            manager.module.registry(scriptName, script)
+        }
     }
 }

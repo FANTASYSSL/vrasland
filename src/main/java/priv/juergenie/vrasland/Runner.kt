@@ -42,6 +42,7 @@ fun main() {
         context.json(result).
                 status(500)
     }
+
     // 添加通用路由映射
     app.get("/*", routerHandler::getHandler)
     app.post("/*", routerHandler::postHandler)

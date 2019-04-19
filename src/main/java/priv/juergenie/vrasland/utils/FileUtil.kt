@@ -1,10 +1,9 @@
 //package priv.juergenie.vrasland.utils
 //
-//import org.springframework.boot.system.ApplicationHome
+//import java.io.File
 //
-//open class FileUtil {
-//    fun getStartedPath(cls: Class<Any>): String {
-//        val home = ApplicationHome(cls)
-//        return home.source.absolutePath
+//class FileUtil {
+//    fun File.getNameWithoutExtension(file: File): String {
+//        return file.name.substringBeforeLast('.')
 //    }
 //}

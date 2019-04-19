@@ -69,6 +69,8 @@ class Configure(private val path: String, newFile: Boolean = false) {
             // 脚本解析器相关配置
             DEFAULT["script"] = Section(DEFAULT, "script")
             DEFAULT["script"]["apiPath"] = "./api"          // 服务器 API 所在根路径
+            DEFAULT["script"]["modules"] = "./scriptlibs"   // 脚本模块存放路径，该路径下的文件会被预执行
+            DEFAULT["script"]["interval"] = "5000"          // 脚本模块监听间隔
             DEFAULT["script"]["extension"] = "js"           // 脚本后缀名
             DEFAULT["script"]["urlParser"] = "default"      // 请求路径解析器配置，如果要添加的话，请向 RequestUrlParser.INSTANCE 中添加: RequestUrlParser.INSTANCE[name] = {//...}
             // 内置数据库相关配置
